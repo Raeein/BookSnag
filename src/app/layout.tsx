@@ -16,7 +16,7 @@ const dmSans = DM_Sans({
   display: 'swap',
 })
 
-const siteUrl = 'https://booksnag.vercel.app'
+const siteUrl = 'https://book-snag.vercel.app'
 
 export const metadata: Metadata = {
   metadataBase: new URL(siteUrl),

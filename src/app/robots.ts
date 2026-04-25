@@ -1,6 +1,6 @@
 import type { MetadataRoute } from 'next'
 
-const siteUrl = 'https://booksnag.vercel.app'
+const siteUrl = 'https://book-snag.vercel.app'
 
 export default function robots(): MetadataRoute.Robots {
   return {
