@@ -10,9 +10,9 @@ A free, open-source audiobook downloader for the web. Paste a book URL, scrape i
 Web counterpart to the **DownloadIT** macOS app.
 
 <p align="center">
-  <img src="mobile-home.png" width="240" alt="Home" />
-  <img src="mobile-browse.png" width="240" alt="Browse" />
-  <img src="mobile-download.png" width="240" alt="Download" />
+  <img src="docs/screenshots/mobile-home.png" width="240" alt="Home" />
+  <img src="docs/screenshots/mobile-browse.png" width="240" alt="Browse" />
+  <img src="docs/screenshots/mobile-download.png" width="240" alt="Download" />
 </p>
 
 ## Features
@@ -68,22 +68,28 @@ Next.js 15 (App Router) · React 19 · TypeScript · Cheerio (server-side scrapi
 ```
 src/
 ├── app/
-│   ├── layout.tsx          Root layout, SEO metadata, fonts
-│   ├── page.tsx            Server shell
-│   ├── globals.css         Design system
-│   ├── sitemap.ts          Dynamic sitemap
-│   ├── robots.ts           Robots.txt
+│   ├── layout.tsx           Root layout, SEO metadata, fonts
+│   ├── page.tsx             Server shell
+│   ├── globals.css          Design system
+│   ├── icon.svg             Favicon
+│   ├── apple-icon.tsx       Generated Apple touch icon
+│   ├── opengraph-image.tsx  Generated OG image
+│   ├── sitemap.ts           Dynamic sitemap
+│   ├── robots.ts            Robots.txt
+│   ├── disclaimer/          Legal disclaimer page
 │   └── api/
-│       ├── scrape/         Chapter list from a book URL
-│       ├── browse/         Recent books for a site
-│       ├── search/         Search a site
-│       ├── book-detail/    Synopsis, chapters, cover
-│       └── proxy/          Same-origin audio proxy
+│       ├── scrape/          Chapter list from a book URL
+│       ├── browse/          Recent books for a site
+│       ├── search/          Search a site
+│       ├── book-detail/     Synopsis, chapters, cover
+│       └── proxy/           Same-origin audio proxy
 ├── lib/
-│   ├── allowlist.ts        SSRF-safe URL validation
-│   └── rate-limit.ts       Per-IP token bucket
+│   ├── allowlist.ts         SSRF-safe URL validation
+│   └── rate-limit.ts        Per-IP token bucket
 └── components/
-    └── BookSnagApp.tsx     Single client component, all tab logic
+    └── BookSnagApp.tsx      Single client component, all tab logic
+
+docs/screenshots/            Mobile preview images used in README
 ```
 
 </details>

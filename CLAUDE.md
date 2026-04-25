@@ -14,12 +14,18 @@ BookSnag is a web app counterpart to the DownloadIT macOS app. It provides the s
 
 ## Architecture
 
-- `src/app/layout.tsx` — Root layout: sets SEO metadata, loads fonts, injects CSS vars
+- `src/app/layout.tsx` — Root layout: SEO metadata, fonts, CSS vars
 - `src/app/page.tsx` — Server component shell; imports `<BookSnagApp />`
 - `src/app/globals.css` — Full design system: CSS vars, keyframes, component classes
+- `src/app/icon.svg`, `apple-icon.tsx`, `opengraph-image.tsx` — Icons and OG image
 - `src/app/sitemap.ts` — Dynamic sitemap (Next.js route)
 - `src/app/robots.ts` — Robots.txt (Next.js route)
+- `src/app/disclaimer/` — Legal disclaimer page
+- `src/app/api/{scrape,browse,search,book-detail,proxy}/` — Server-side scraping + audio proxy
+- `src/lib/allowlist.ts` — SSRF-safe domain allowlist (gates all API routes)
+- `src/lib/rate-limit.ts` — Per-IP token bucket
 - `src/components/BookSnagApp.tsx` — Single client component with all tab logic
+- `docs/screenshots/` — README preview images (keep PNGs out of repo root)
 
 ## Coding Rules
 
