@@ -2,6 +2,17 @@
   "name": "booksnag",
   "version": "0.1.0",
   "private": true,
+  "description": "A free, open-source audiobook downloader for the web. Paste a URL, scrape chapters, download in parallel, optionally merge into one file.",
+  "author": "Raeein Bagheri",
+  "license": "WTFPL",
+  "homepage": "https://github.com/raeeinbagheri/BookSnag",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/raeeinbagheri/BookSnag.git"
+  },
+  "bugs": {
+    "url": "https://github.com/raeeinbagheri/BookSnag/issues"
+  },
   "scripts": {
     "dev": "next dev --turbopack",
     "build": "next build",
@@ -9,6 +20,7 @@
     "lint": "next lint"
   },
   "dependencies": {
+    "cheerio": "^1.2.0",
     "next": "15.3.1",
     "react": "^19.0.0",
     "react-dom": "^19.0.0"
