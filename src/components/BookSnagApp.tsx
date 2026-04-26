@@ -114,6 +114,21 @@ export default function BookSnagApp() {
   const [toastFailed, setToastFailed] = useState(0)
   const toastTimer = useRef<ReturnType<typeof setTimeout> | null>(null)
 
+  // iOS-deferred saves (iOS blocks programmatic blob downloads, so collect
+  // files and let the user invoke the share sheet via a tap)
+  const [pendingFiles, setPendingFiles] = useState<{ blob: Blob; filename: string }[]>([])
+  const [isIOSDevice, setIsIOSDevice] = useState(false)
+  const [shareError, setShareError] = useState<string | null>(null)
+
+  useEffect(() => {
+    if (typeof navigator === 'undefined') return
+    const ua = navigator.userAgent
+    const ios =
+      /iPad|iPhone|iPod/.test(ua) ||
+      (navigator.platform === 'MacIntel' && navigator.maxTouchPoints > 1)
+    setIsIOSDevice(ios)
+  }, [])
+
   // Load persisted settings on mount
   useEffect(() => {
     try {
@@ -175,6 +190,8 @@ export default function BookSnagApp() {
     setProgressDetail('')
     setScrapeState('idle')
     setShowToast(false)
+    setPendingFiles([])
+    setShareError(null)
     if (toastTimer.current) clearTimeout(toastTimer.current)
   }
 
@@ -192,6 +209,8 @@ export default function BookSnagApp() {
     setOverallPct(0)
     setScrapeError(null)
     setBookTitle('')
+    setPendingFiles([])
+    setShareError(null)
     setScrapeState('scraping')
     setProgressStatus('Scraping page…')
     setProgressDetail('Fetching chapter URLs')
@@ -354,6 +373,10 @@ export default function BookSnagApp() {
   }
 
   function triggerDownload(blob: Blob, filename: string) {
+    if (isIOSDevice) {
+      setPendingFiles(prev => [...prev, { blob, filename }])
+      return
+    }
     const url = URL.createObjectURL(blob)
     const a = document.createElement('a')
     a.href = url
@@ -362,6 +385,39 @@ export default function BookSnagApp() {
     a.click()
     document.body.removeChild(a)
     setTimeout(() => URL.revokeObjectURL(url), 1000)
+  }
+
+  async function savePendingFiles() {
+    if (pendingFiles.length === 0) return
+    setShareError(null)
+    const files = pendingFiles.map(
+      p => new File([p.blob], p.filename, { type: p.blob.type || 'audio/mpeg' }),
+    )
+    const nav = navigator as Navigator & { canShare?: (data: ShareData) => boolean }
+    if (nav.canShare && nav.canShare({ files })) {
+      try {
+        await nav.share({ files } as ShareData)
+        setPendingFiles([])
+      } catch (err) {
+        if ((err as Error).name !== 'AbortError') {
+          setShareError('Sharing failed. Long-press a file to save it instead.')
+        }
+      }
+      return
+    }
+    for (const p of pendingFiles) {
+      const url = URL.createObjectURL(p.blob)
+      const a = document.createElement('a')
+      a.href = url
+      a.download = p.filename
+      a.target = '_blank'
+      a.rel = 'noopener'
+      document.body.appendChild(a)
+      a.click()
+      document.body.removeChild(a)
+      setTimeout(() => URL.revokeObjectURL(url), 1000)
+    }
+    setPendingFiles([])
   }
 
   function cancelScrape() {
@@ -609,6 +665,27 @@ export default function BookSnagApp() {
               )}
             </div>
           </div>
+
+          {pendingFiles.length > 0 && (
+            <div className="save-banner">
+              <div className="save-banner-text">
+                <div className="save-banner-title">
+                  {pendingFiles.length === 1
+                    ? 'Audiobook ready to save'
+                    : `${pendingFiles.length} files ready to save`}
+                </div>
+                <div className="save-banner-sub">
+                  Tap Save to open the share sheet — choose &quot;Save to Files&quot; to keep on your device.
+                </div>
+                {shareError && (
+                  <div className="save-banner-err">{shareError}</div>
+                )}
+              </div>
+              <button className="scrape-btn save-banner-btn" onClick={savePendingFiles}>
+                Save
+              </button>
+            </div>
+          )}
 
           {scrapeState === 'error' && scrapeError && (
             <div className="glass-card" style={{ marginBottom: 14, padding: '12px 16px', color: '#ff6b6b', fontSize: 13, display: 'flex', justifyContent: 'space-between', alignItems: 'center', gap: 12 }}>

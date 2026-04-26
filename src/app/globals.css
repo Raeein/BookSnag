@@ -61,6 +61,7 @@ body::before {
 .app-shell {
   display: flex;
   height: 100vh;
+  height: 100dvh;
   overflow: hidden;
   position: relative;
   z-index: 1;
@@ -70,6 +71,7 @@ body::before {
 .sidebar {
   width: var(--sidebar-width);
   height: 100vh;
+  height: 100dvh;
   background: rgba(13, 13, 26, 0.95);
   border-right: 1px solid var(--border);
   display: flex;
@@ -1223,6 +1225,60 @@ body::before {
 
 .empty-msg {
   font-size: 13px;
+}
+
+/* ── iOS save banner ── */
+.save-banner {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  padding: 14px 16px;
+  margin-bottom: 14px;
+  background: linear-gradient(135deg, rgba(0, 212, 170, 0.10), rgba(124, 111, 255, 0.08));
+  border: 1px solid rgba(0, 212, 170, 0.30);
+  border-radius: var(--radius);
+  box-shadow: 0 0 24px rgba(0, 212, 170, 0.08);
+}
+
+.save-banner-text {
+  flex: 1;
+  min-width: 0;
+}
+
+.save-banner-title {
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--text-primary);
+  margin-bottom: 3px;
+}
+
+.save-banner-sub {
+  font-size: 11.5px;
+  color: var(--text-secondary);
+  line-height: 1.4;
+}
+
+.save-banner-err {
+  font-size: 11.5px;
+  color: #ff6b6b;
+  margin-top: 4px;
+}
+
+.save-banner-btn {
+  padding: 10px 20px;
+  height: auto;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .save-banner {
+    flex-direction: column;
+    align-items: stretch;
+    gap: 10px;
+  }
+  .save-banner-btn {
+    width: 100%;
+  }
 }
 
 /* ── Completion toast ── */
