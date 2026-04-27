@@ -29,6 +29,7 @@ export async function GET(req: NextRequest) {
   const baseURL = SITES[siteName] ?? SITES.golden
   const searchURL = `${baseURL}/?s=${encodeURIComponent(q)}`
 
+  const MAX_HTML_BYTES = 5 * 1024 * 1024
   let html: string
   try {
     const response = await fetch(searchURL, {
@@ -39,7 +40,14 @@ export async function GET(req: NextRequest) {
     if (!response.ok) {
       return NextResponse.json({ error: 'Search page could not be loaded.', results: [] }, { status: 502 })
     }
+    const len = response.headers.get('content-length')
+    if (len && Number(len) > MAX_HTML_BYTES) {
+      return NextResponse.json({ error: 'Upstream page is too large.', results: [] }, { status: 502 })
+    }
     html = await response.text()
+    if (html.length > MAX_HTML_BYTES) {
+      return NextResponse.json({ error: 'Upstream page is too large.', results: [] }, { status: 502 })
+    }
   } catch {
     return NextResponse.json({ error: 'The search site could not be reached.', results: [] }, { status: 502 })
   }

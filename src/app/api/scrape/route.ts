@@ -34,13 +34,24 @@ export async function POST(req: NextRequest) {
     return NextResponse.json({ error: e.message }, { status: e.status ?? 400 })
   }
 
+  const MAX_HTML_BYTES = 5 * 1024 * 1024
   let html: string
   try {
-    const response = await fetch(pageURL.href, { headers: FETCH_HEADERS })
+    const response = await fetch(pageURL.href, {
+      headers: FETCH_HEADERS,
+      signal: AbortSignal.timeout(15000),
+    })
     if (!response.ok) {
       return NextResponse.json({ error: 'The page could not be loaded from the website.' }, { status: 502 })
     }
+    const len = response.headers.get('content-length')
+    if (len && Number(len) > MAX_HTML_BYTES) {
+      return NextResponse.json({ error: 'Upstream page is too large.' }, { status: 502 })
+    }
     html = await response.text()
+    if (html.length > MAX_HTML_BYTES) {
+      return NextResponse.json({ error: 'Upstream page is too large.' }, { status: 502 })
+    }
   } catch {
     return NextResponse.json({ error: 'The website could not be reached.' }, { status: 502 })
   }

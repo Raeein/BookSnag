@@ -26,6 +26,7 @@ export async function GET(req: NextRequest) {
     return NextResponse.json({ error: e.message }, { status: e.status ?? 400 })
   }
 
+  const MAX_HTML_BYTES = 5 * 1024 * 1024
   let html: string
   try {
     const response = await fetch(pageURL.href, {
@@ -34,7 +35,14 @@ export async function GET(req: NextRequest) {
       signal: AbortSignal.timeout(8000),
     })
     if (!response.ok) return NextResponse.json({ error: 'Page could not be loaded.' }, { status: 502 })
+    const len = response.headers.get('content-length')
+    if (len && Number(len) > MAX_HTML_BYTES) {
+      return NextResponse.json({ error: 'Upstream page is too large.' }, { status: 502 })
+    }
     html = await response.text()
+    if (html.length > MAX_HTML_BYTES) {
+      return NextResponse.json({ error: 'Upstream page is too large.' }, { status: 502 })
+    }
   } catch {
     return NextResponse.json({ error: 'Site could not be reached.' }, { status: 502 })
   }

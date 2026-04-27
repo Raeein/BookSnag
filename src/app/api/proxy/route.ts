@@ -2,7 +2,27 @@ import { NextRequest, NextResponse } from 'next/server'
 import { assertAllowedUrl, UrlRejectedError } from '@/lib/allowlist'
 import { rateLimit } from '@/lib/rate-limit'
 
+const MAX_AUDIO_BYTES = 500 * 1024 * 1024
+
+function isSameOriginRequest(req: NextRequest): boolean {
+  const site = req.headers.get('sec-fetch-site')
+  if (site) return site === 'same-origin' || site === 'same-site'
+
+  const selfOrigin = req.nextUrl.origin
+  const origin = req.headers.get('origin')
+  if (origin) return origin === selfOrigin
+  const referer = req.headers.get('referer')
+  if (referer) {
+    try { return new URL(referer).origin === selfOrigin } catch { return false }
+  }
+  return false
+}
+
 export async function GET(req: NextRequest) {
+  if (!isSameOriginRequest(req)) {
+    return new NextResponse('Forbidden', { status: 403 })
+  }
+
   const rl = rateLimit(req, 120)
   if (!rl.ok) {
     return new NextResponse('Too many requests', {
@@ -30,7 +50,10 @@ export async function GET(req: NextRequest) {
 
   let upstream: Response
   try {
-    upstream = await fetch(parsed.href, { headers: upstreamHeaders })
+    upstream = await fetch(parsed.href, {
+      headers: upstreamHeaders,
+      signal: AbortSignal.timeout(15000),
+    })
   } catch {
     return new NextResponse('Failed to fetch audio', { status: 502 })
   }
@@ -39,10 +62,14 @@ export async function GET(req: NextRequest) {
     return new NextResponse('Upstream error', { status: upstream.status })
   }
 
+  const upstreamLen = upstream.headers.get('content-length')
+  if (upstreamLen && Number(upstreamLen) > MAX_AUDIO_BYTES) {
+    return new NextResponse('Upstream payload too large', { status: 502 })
+  }
+
   const headers: Record<string, string> = {
     'Content-Type': upstream.headers.get('Content-Type') ?? 'audio/mpeg',
-    'Cache-Control': 'public, max-age=3600',
-    'Access-Control-Allow-Origin': '*',
+    'Cache-Control': 'private, max-age=3600',
   }
   const pass = ['Content-Length', 'Accept-Ranges', 'Content-Range']
   for (const h of pass) {
