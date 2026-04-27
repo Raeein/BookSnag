@@ -9,6 +9,7 @@ type SearchState = 'empty' | 'loading' | 'results' | 'noresults' | 'error'
 type BrowseState = 'idle' | 'loading' | 'loaded'
 type SiteName   = 'Golden' | 'Daily'
 type DetailPhase = 'loading' | 'done' | 'error'
+type Theme      = 'light' | 'dark'
 
 interface Chapter    { name: string; url: string }
 interface FileItem   { id: number; name: string; pct: number; done: boolean; error?: string }
@@ -52,6 +53,19 @@ const IconSettings = () => (
   <svg className="nav-icon" viewBox="0 0 18 18" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
     <circle cx="9" cy="9" r="2.5" />
     <path d="M9 2v1.5M9 14.5V16M2 9h1.5M14.5 9H16M4.1 4.1l1.1 1.1M12.8 12.8l1.1 1.1M13.9 4.1l-1.1 1.1M5.2 12.8l-1.1 1.1" />
+  </svg>
+)
+
+const IconSun = () => (
+  <svg className="theme-toggle-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round">
+    <circle cx="8" cy="8" r="3" />
+    <path d="M8 1.5v1.7M8 12.8v1.7M1.5 8h1.7M12.8 8h1.7M3.4 3.4l1.2 1.2M11.4 11.4l1.2 1.2M12.6 3.4l-1.2 1.2M4.6 11.4l-1.2 1.2" />
+  </svg>
+)
+
+const IconMoon = () => (
+  <svg className="theme-toggle-icon" viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round">
+    <path d="M13.5 9.5A6 6 0 0 1 6.5 2.5a6 6 0 1 0 7 7z" />
   </svg>
 )
 
@@ -101,6 +115,7 @@ export default function BookSnagApp() {
   const [mergeFile, setMergeFile]     = useState(true)
   const [deleteOrig, setDeleteOrig]   = useState(false)
   const [site, setSite]               = useState<SiteName>('Golden')
+  const [theme, setTheme]             = useState<Theme>('light')
 
   // Book detail
   const [selectedBook, setSelectedBook] = useState<{ title: string; url: string; cover?: string } | null>(null)
@@ -140,7 +155,15 @@ export default function BookSnagApp() {
         if (p.site === 'Golden' || p.site === 'Daily') setSite(p.site)
       }
     } catch {}
+    const applied = document.documentElement.dataset.theme
+    if (applied === 'light' || applied === 'dark') setTheme(applied)
   }, [])
+
+  function applyTheme(next: Theme) {
+    setTheme(next)
+    document.documentElement.dataset.theme = next
+    try { localStorage.setItem('booksnag_theme', next) } catch {}
+  }
 
   // Preload browse in the background so the tab is instant when clicked,
   // and refresh when site changes.
@@ -625,6 +648,26 @@ export default function BookSnagApp() {
         </div>
 
         <div className="sidebar-footer">
+          <div className="theme-toggle" role="group" aria-label="Theme">
+            <button
+              type="button"
+              className={`theme-toggle-btn${theme === 'light' ? ' active' : ''}`}
+              aria-pressed={theme === 'light'}
+              onClick={() => applyTheme('light')}
+            >
+              <IconSun />
+              Light
+            </button>
+            <button
+              type="button"
+              className={`theme-toggle-btn${theme === 'dark' ? ' active' : ''}`}
+              aria-pressed={theme === 'dark'}
+              onClick={() => applyTheme('dark')}
+            >
+              <IconMoon />
+              Dark
+            </button>
+          </div>
           <div className="version-tag">v1.0.0</div>
           <div className="sidebar-footer-links">
             <a href="/disclaimer">Disclaimer</a>
@@ -979,6 +1022,25 @@ export default function BookSnagApp() {
                   <div className="t-track" />
                   <div className="t-thumb" />
                 </label>
+              </div>
+            </div>
+          </div>
+
+          <div className="settings-section">
+            <div className="section-label">Appearance</div>
+            <div className="settings-group">
+              <div className="s-row">
+                <div className="s-left">
+                  <div className="s-title">Theme</div>
+                  <div className="s-desc">Light is welcoming for daytime; dark for late-night reading</div>
+                </div>
+                <div className="segmented">
+                  {(['light', 'dark'] as Theme[]).map(t => (
+                    <div key={t} className={`seg${theme === t ? ' active' : ''}`} onClick={() => applyTheme(t)}>
+                      {t === 'light' ? 'Light' : 'Dark'}
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           </div>
