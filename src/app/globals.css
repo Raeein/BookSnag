@@ -356,10 +356,6 @@ body::before {
   transform: translateY(0);
 }
 
-.scrape-btn.loading {
-  pointer-events: none;
-}
-
 .scrape-btn.loading::after {
   content: '';
   position: absolute;

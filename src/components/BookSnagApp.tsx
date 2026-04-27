@@ -351,15 +351,25 @@ export default function BookSnagApp() {
     const chunks: Uint8Array<ArrayBuffer>[] = []
     let received = 0
 
+    const IDLE_TIMEOUT_MS = 30000
     while (true) {
-      const { done, value } = await reader.read()
-      if (done) break
+      const idle = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Stalled')), IDLE_TIMEOUT_MS),
+      )
+      let result: ReadableStreamReadResult<Uint8Array<ArrayBuffer>>
+      try {
+        result = await Promise.race([reader.read(), idle])
+      } catch {
+        reader.cancel().catch(() => {})
+        throw new Error('Download stalled')
+      }
+      if (result.done) break
       if (signal.aborted) {
         reader.cancel()
         throw new DOMException('Aborted', 'AbortError')
       }
-      chunks.push(value)
-      received += value.length
+      chunks.push(result.value)
+      received += result.value.length
       if (total) onProgress((received / total) * 100)
     }
 
