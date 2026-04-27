@@ -32,12 +32,33 @@ Web counterpart to the **DownloadIT** macOS app.
 
 ## Quick Start
 
+### Option 1 — Docker (recommended)
+
+Requires Docker (or Docker Desktop). One command:
+
+```bash
+docker compose up --build
+```
+
+Then open <http://localhost:3000>. Stop with `Ctrl+C`, or `docker compose down` to remove the container.
+
+The image is multi-stage and uses Next.js [standalone output](https://nextjs.org/docs/app/api-reference/config/next-config-js/output), so the final image is small (~150 MB) and runs as a non-root user.
+
+To run without Compose:
+
+```bash
+docker build -t booksnag .
+docker run --rm -p 3000:3000 booksnag
+```
+
+### Option 2 — Node
+
+Requires Node 20+ and npm.
+
 ```bash
 npm install
 npm run dev
 ```
-
-Open <http://localhost:3000>.
 
 | Script            | Description                  |
 | ----------------- | ---------------------------- |

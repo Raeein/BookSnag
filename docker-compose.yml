@@ -1,0 +1,10 @@
+services:
+  booksnag:
+    build: .
+    image: booksnag:latest
+    container_name: booksnag
+    ports:
+      - "3000:3000"
+    environment:
+      NODE_ENV: production
+    restart: unless-stopped
